@@ -218,28 +218,6 @@ const CONFIG = {
 | `MAX_LOGIN_ATTEMPTS` | 最大登录尝试次数 | 超过次数后需要等待一段时间 |
 | `BACKGROUND_IMAGE` | 背景图片 | 多个图片用分号`;`隔开，系统会随机选择 |
 
-### 协议配置（PROTOCOL）
-
-用于防止 Cloudflare 关键词屏蔽，一般不需要修改：
-
-```javascript
-const PROTOCOL = {
-    xieyi: 'vl',      // vless
-    xieyi2: 'ess',    // vless
-    pm: 'vm'          // vmess
-};
-```
-
-### 排除关键词（excludeKeywords）
-
-在代码中可以预设排除关键词，用分号隔开：
-
-```javascript
-const excludeKeywords = 'GB-eu.com;TW-free.tw';
-```
-
----
-
 ## 使用指南
 
 ### 1. 访问管理页面
