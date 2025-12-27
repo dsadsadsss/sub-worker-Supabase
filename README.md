@@ -66,36 +66,66 @@
 
 在 Supabase 项目的 SQL Editor 中执行以下 SQL：
 
-```sql
--- 创建 URLs 表（存储上传的节点）
+```
+-- 创建URLs表（自动上传的节点）
 CREATE TABLE IF NOT EXISTS urls (
     id BIGSERIAL PRIMARY KEY,
     url_name TEXT NOT NULL,
     url TEXT NOT NULL,
     last_update BIGINT NOT NULL,
-    expiration_ttl INTEGER NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    expiration_ttl INTEGER NOT NULL
 );
 
--- 创建索引
-CREATE INDEX IF NOT EXISTS idx_urls_url_name ON urls(url_name);
-CREATE INDEX IF NOT EXISTS idx_urls_last_update ON urls(last_update);
-
--- 创建 sub2_urls 表（存储自定义节点）
+-- 创建自定义节点表
 CREATE TABLE IF NOT EXISTS sub2_urls (
     id BIGSERIAL PRIMARY KEY,
-    url TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    url TEXT NOT NULL
 );
 
--- 创建 exclude_keywords 表（存储过滤关键词）
+-- 创建关键词过滤表
 CREATE TABLE IF NOT EXISTS exclude_keywords (
     id BIGSERIAL PRIMARY KEY,
-    keyword TEXT NOT NULL UNIQUE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    keyword TEXT NOT NULL
 );
 
--- 创建删除过期 URLs 的函数
+-- 创建背景图片表
+CREATE TABLE IF NOT EXISTS background_images (
+    id BIGSERIAL PRIMARY KEY,
+    image_url TEXT NOT NULL,
+    created_at BIGINT DEFAULT EXTRACT(EPOCH FROM NOW())::BIGINT
+);
+
+-- 初始化所有表的函数
+CREATE OR REPLACE FUNCTION init_tables()
+RETURNS void AS $$
+BEGIN
+    CREATE TABLE IF NOT EXISTS urls (
+        id BIGSERIAL PRIMARY KEY,
+        url_name TEXT NOT NULL,
+        url TEXT NOT NULL,
+        last_update BIGINT NOT NULL,
+        expiration_ttl INTEGER NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS sub2_urls (
+        id BIGSERIAL PRIMARY KEY,
+        url TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS exclude_keywords (
+        id BIGSERIAL PRIMARY KEY,
+        keyword TEXT NOT NULL
+    );
+    
+    CREATE TABLE IF NOT EXISTS background_images (
+        id BIGSERIAL PRIMARY KEY,
+        image_url TEXT NOT NULL,
+        created_at BIGINT DEFAULT EXTRACT(EPOCH FROM NOW())::BIGINT
+    );
+END;
+$$ LANGUAGE plpgsql;
+
+-- 删除过期URLs的函数
 CREATE OR REPLACE FUNCTION delete_expired_urls(expired_time BIGINT)
 RETURNS void AS $$
 BEGIN
@@ -103,7 +133,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 创建删除所有 URLs 的函数
+-- 删除所有URLs的函数
 CREATE OR REPLACE FUNCTION delete_all_urls()
 RETURNS void AS $$
 BEGIN
@@ -111,7 +141,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 创建删除所有 sub2_urls 的函数
+-- 删除所有SUB2 URLs的函数
 CREATE OR REPLACE FUNCTION delete_all_sub2_urls()
 RETURNS void AS $$
 BEGIN
@@ -119,17 +149,22 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 创建删除所有关键词的函数
+-- 删除所有关键词的函数
 CREATE OR REPLACE FUNCTION delete_all_keywords()
 RETURNS void AS $$
 BEGIN
     DELETE FROM exclude_keywords;
 END;
 $$ LANGUAGE plpgsql;
+
+-- 删除所有背景图片的函数
+CREATE OR REPLACE FUNCTION delete_all_background_images()
+RETURNS void AS $$
+BEGIN
+    DELETE FROM background_images;
+END;
+$$ LANGUAGE plpgsql;
 ```
-
----
-
 ## 部署步骤
 
 ### 步骤 1: 获取 Supabase 配置信息
